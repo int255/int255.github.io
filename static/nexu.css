@@ -1,0 +1,16 @@
+@font-face {
+	font-family: 'RobotoCondensed-Regular';
+	src: url('RobotoCondensed-Regular.ttf') format('truetype');
+	font-weight: 500;
+    font-style: normal;
+}
+
+body {
+    background-color: #EFEFEF;
+    font-family: Geneva, Verdana;
+    font-size: 18px;
+    border: top 100;
+    margin: 10px;
+    min-width: 200px;
+}
+
