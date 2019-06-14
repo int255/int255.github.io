@@ -3,54 +3,37 @@
 	<head>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="static/Fonts.css">
+        <style>
+            #drop_zone {
+                border: 5px dashed gray;
+                border-radius: 25px;
+                width:  400px;
+                height: 120px;
+                color: gray;
+                text-align: center;
+            }
+        </style>
 	</head>
 	<body>
         <script src='static/jquery-3.4.1.min.js' type='text/javascript'></script>
-        <script src='Init.js' type='text/javascript'></script>
-        <script src='TextPreview.js' type='text/javascript'></script>
-        <script type='text/javascript'>
-            function init()
-            {
-                //alert('init()');
-                //alert('Module' + Module);
-                var old = console.log;
-                var logger = document.getElementById('log');
-                console.log = function (message)
-                {
-                    if (typeof message == 'object') {
-                        logger.innerHTML += (JSON && JSON.stringify ? JSON.stringify(message) : message) + '<br />';
-                    } else {
-                        logger.innerHTML += message + '<br />';
-                    }
-                }
-                var fontfile = 'Futura.ttc';
-                console.log('Font file: ' + fontfile );
-                // Handler for .ready() called.
-                var count = Module.tp_count_faces(fontfile);
-                console.log('Number of faces: ' + count);
-                
-                for (var i=0; i<count; ++i)
-                {
-                    var hface = Module.tp_open_face(fontfile, i);
-                    
-                    //var info = Module.ccall('tp_get_face_info', 'string', ['number'], [hface]);
-                    var info = Module.tp_get_face_info(hface);
-                    
-                    console.log('Face Info: ' + JSON.stringify(info, null, '    '));
-                }
-            }
-            $(function() {
-
-              //init();
-              
-              });
-        </script>
         <div style="font-family:RobotoCondensed-Regular;">
 		<h5>Mini Typist</h5>
         </div>
+        <div style="font-family:RobotoCondensed-Regular;" id="drop_zone">
+            <p> Drop a font file here ...</p>
+        </div>
         <pre id="log" style="font-family:Nova Mono; font-size:12;"></pre>
         
-        
+        <script src='Init.js' type='text/javascript'></script>
+        <script src='TextPreview.js' type='text/javascript'></script>
+        <script type='text/javascript'>
+            
+            $(function() {
+              
+              //loadFontFile('Futura.ttc');
+              
+              });
+        </script>
 	</body>
 
 </html>
