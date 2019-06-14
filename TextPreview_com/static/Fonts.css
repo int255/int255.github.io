@@ -1,0 +1,13 @@
+@font-face {
+	font-family: 'RobotoCondensed-Regular';
+	src: url('RobotoCondensed-Regular.ttf') format('truetype');
+	font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nova Mono';
+    src: url('NovaMono.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
