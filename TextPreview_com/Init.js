@@ -20,6 +20,7 @@ function loadFontFile(fontfile)
 {
     msg.clear();
     msg.log('Font file: ' + fontfile + ' exists? ' + Module.tp_file_exists(fontfile));
+    $("#dropped_filename").html(fontfile);
     var count = Module.tp_count_faces(fontfile);
     msg.log('Number of faces: ' + count);
     for (var i=0; i<count; ++i)
@@ -27,6 +28,28 @@ function loadFontFile(fontfile)
         var hface = Module.tp_open_face(fontfile, i);
         var info = Module.tp_get_face_info(hface);
         msg.log(info);
+        
+        // dump some glyphs
+        //var gid = Module.tp_get_gid(hface, "f".charCodeAt(0));
+        var fontSize = 18.0;
+        var leading = 1.2 * fontSize;
+        //var svg_str = Module.tp_get_svg_glyph(hface, gid, fontSize);
+        var svg_str = Module.tp_get_svg(hface, "The quick brown fox jumps over the lazy dog.", fontSize);
+        document.getElementById('svg_path').setAttribute('d', svg_str);
+        var margin = 5;
+        document.getElementById('svg_path').setAttribute('transform', 'translate(' + margin + ', ' + (leading+ margin) +')');
+        var bbox = document.getElementById('svg_path').getBBox();
+        console.log('bounds: ' + bbox);
+        var svg_border = document.getElementById('svg_path_border');
+        
+        svg_border.setAttribute('x', bbox.x + 1);
+        svg_border.setAttribute('y', bbox.y + 1);
+        svg_border.setAttribute('width', bbox.width + 2*margin);
+        svg_border.setAttribute('height', bbox.height+ 2*margin);
+        svg_border.setAttribute('transform', 'translate(0, ' + leading +')');
+        svg_root =  document.getElementById('svg_root');
+        svg_root.setAttribute('width',  bbox.width + 4*margin);
+        svg_root.setAttribute('height',  bbox.height + 4*margin);
         Module.tp_close_face(hface);
     }
 }
