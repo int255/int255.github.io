@@ -16,6 +16,130 @@ var msg = {
     }
 };
 
+
+function loadFace(fontfile, index)
+{
+    var hface = Module.tp_open_face(fontfile, index);
+    var info = Module.tp_get_face_info(hface);
+    msg.clear();
+    msg.log(info);
+    
+    // dump some glyphs
+    //var gid = Module.tp_get_gid(hface, "f".charCodeAt(0));
+    var fontSize = 36.0;
+    var leading = 1.2 * fontSize;
+    //var svg_str = Module.tp_get_svg_glyph(hface, gid, fontSize);
+    var svg_str = Module.tp_get_svg(hface, "fi fj ffi The quick brown fox jumps over the lazy dog.", fontSize);
+    document.getElementById('svg_path').setAttribute('d', svg_str);
+    var margin = 5;
+    document.getElementById('svg_path').setAttribute('transform', 'translate(' + margin + ', ' + (leading+ margin) +')');
+    var bbox = document.getElementById('svg_path').getBBox();
+    console.log('bounds: ' + bbox);
+    var svg_border = document.getElementById('svg_path_border');
+    
+    svg_border.setAttribute('x', bbox.x + 1);
+    svg_border.setAttribute('y', bbox.y + 1);
+    svg_border.setAttribute('width', bbox.width + 2*margin);
+    svg_border.setAttribute('height', bbox.height+ 2*margin);
+    svg_border.setAttribute('transform', 'translate(0, ' + leading +')');
+    svg_root =  document.getElementById('svg_root');
+    svg_root.setAttribute('width',  bbox.width + 4*margin + 6);
+    svg_root.setAttribute('height',  bbox.height + 4*margin + 6);
+    Module.tp_close_face(hface);
+    
+    loadGlyphs(fontfile, index);
+}
+
+function createFace(fontfile, index)
+{
+    var hface = Module.tp_open_face(fontfile, index);
+    return
+}
+
+var Face = {
+    _face : 0,
+    _glyphs : [],
+    _info : {},
+    _fontFile : '',
+    _index : 0,
+    _glyphsLoaded : false,
+    _glyphsLoadSize : 0.0,
+    terminate : function()
+    {
+        Module.tp_close_face(this._face);
+        this._info = {};
+        this._glyphs = [];
+        this._face = 0;
+        this._fontFile = '';
+        this._index = 0;
+        this._glyphsLoaded = false;
+        this._glyphsLoadSize = 0.0;
+    },
+    init : function (fontfile, index)
+    {
+        if (this._fontFile == fontfile  && this._index == index)
+            return;
+        
+        if (this._face != 0)
+        {
+            this.terminate();
+        }
+        this._face = Module.tp_open_face(fontfile, index);
+        this._info = Module.tp_get_face_info(this._face);
+    },
+    face : function()
+    {
+        return this._face;
+    },
+    info:function()
+    {
+        return this._info;
+    },
+    loadGlyphs : function(fontSize)
+    {
+        if (this._glyphsLoaded && this._glyphsLoadSize == fontSize)
+            return;
+
+        console.log('num of loaded glyphs ' + this._glyphs.length)
+        for (var gid =0; gid<this._info.numGlyphs; ++gid)
+        {
+            this._glyphs.push(Module.tp_get_svg_glyph(Face.face(), gid, fontSize));
+        }
+        _glyphsLoaded = true;
+        _glyphsLoadSize = fontSize;
+    },
+    glyphs : function()
+    {
+        return this._glyphs;
+    },
+};
+
+
+function loadGlyphs(fontfile, index)
+{
+    //alert("Entry loadGlyphs()");
+    Face.init(fontfile, index);
+    var fontSize = 24.0;
+    Face.loadGlyphs(fontSize);
+    var svgs = Face.glyphs();
+    
+    var glyphs_div = $('#all_glyphs');
+    glyphs_div.html('');
+    var leading = 1.2 * fontSize;
+    var outerSize = 2.0 * fontSize;
+    for (var i =0; i<svgs.length; ++i)
+    {
+        var glyphName = Module.tp_get_glyph_name(Face.face(), i);
+        var tooltip = 'Glyph Index: ' + i + ' Glyph Name: ' + glyphName;
+        glyphs_div.append('<span title="' + tooltip + '"><svg width=' + outerSize +' height=' + outerSize + ' ><path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/></svg></span>');
+        //console.log(svgs[i]);
+        
+    }
+
+    Face.terminate();
+    //alert("Exit loadGlyphs()");
+}
+
 function loadFontFile(fontfile)
 {
     msg.clear();
@@ -23,35 +147,21 @@ function loadFontFile(fontfile)
     $("#dropped_filename").html(fontfile);
     var count = Module.tp_count_faces(fontfile);
     msg.log('Number of faces: ' + count);
+    $('#font_collection').html('');
     for (var i=0; i<count; ++i)
     {
         var hface = Module.tp_open_face(fontfile, i);
         var info = Module.tp_get_face_info(hface);
-        msg.log(info);
-        
-        // dump some glyphs
-        //var gid = Module.tp_get_gid(hface, "f".charCodeAt(0));
-        var fontSize = 18.0;
-        var leading = 1.2 * fontSize;
-        //var svg_str = Module.tp_get_svg_glyph(hface, gid, fontSize);
-        var svg_str = Module.tp_get_svg(hface, "The quick brown fox jumps over the lazy dog.", fontSize);
-        document.getElementById('svg_path').setAttribute('d', svg_str);
-        var margin = 5;
-        document.getElementById('svg_path').setAttribute('transform', 'translate(' + margin + ', ' + (leading+ margin) +')');
-        var bbox = document.getElementById('svg_path').getBBox();
-        console.log('bounds: ' + bbox);
-        var svg_border = document.getElementById('svg_path_border');
-        
-        svg_border.setAttribute('x', bbox.x + 1);
-        svg_border.setAttribute('y', bbox.y + 1);
-        svg_border.setAttribute('width', bbox.width + 2*margin);
-        svg_border.setAttribute('height', bbox.height+ 2*margin);
-        svg_border.setAttribute('transform', 'translate(0, ' + leading +')');
-        svg_root =  document.getElementById('svg_root');
-        svg_root.setAttribute('width',  bbox.width + 4*margin);
-        svg_root.setAttribute('height',  bbox.height + 4*margin);
+        // Fill font_collection
+        $('#font_collection').append('<div onclick=\'loadFace("'+fontfile+'", ' + i + ');\'>' + info['postscriptName'] + '</div>');
         Module.tp_close_face(hface);
     }
+    
+    if (count != 0)
+    {
+        loadFace(fontfile, 0);
+    }
+    
 }
 
 
@@ -103,11 +213,11 @@ var Module = {
     _runTimeInitBegin: null,
     preInit : function() {
         Module._runTimeInitBegin = performance.now();
-        //alert('preInit');
+        console.log('Module.preInit');
     },
     
     preRun : [function() {
-              //alert('preRun');
+              console.log('Module.preRun');
               }],
     
     postRun : [],
@@ -121,7 +231,7 @@ var Module = {
     },
     
     onAbort : function(what) {
-        alert(what);
+        alert('onAbort' + what);
     },
     
     // NEXU: fix initialize problem, when logReadFiles set to true
@@ -130,7 +240,8 @@ var Module = {
     logReadFiles : false,
     
     onRuntimeInitialized : function() {
-        //alert('onRuntimeInitialized');
+        console.log('Module.onRuntimeInitialized()');
+        console.log('Built timestamp: ' + Module.tp_build_timestamp());
         loadFontFile('Futura.ttc');
     },
 };
