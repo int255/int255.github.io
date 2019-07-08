@@ -112,8 +112,36 @@ var Face = {
     {
         return this._glyphs;
     },
+    glyphInfo : function(gid)
+    {
+        return Module.tp_get_glyph_info(this._face, gid);
+    },
 };
 
+function showGlyph(fontfile, index, gid)
+{
+    Face.init(fontfile, index);
+    var ginfo = Face.glyphInfo(gid);
+    //alert(JSON.stringify(ginfo, null, '    ') );
+    var ginfo_str =JSON.stringify(ginfo, function(key, val) {
+                                  if (key == 'unicode' && val == 0)
+                                  {
+                                    // if unicode is 0, means we don't know
+                                  return 'none';
+                                  }
+                                  
+                                    return val.toFixed ? Number(val.toFixed(3)) : val;
+                                  }, '  ' /*indent*/) ;
+    
+    var div = $("#glyph_info");
+    div.html('<pre>' + ginfo_str + '</pre>');
+    div.dialog({
+               modal: true,
+               buttons: { Ok: function() { $( this ).dialog( "close" );}}
+               });
+    //.position({at: ['left', 'center'], my: 'center'}); // no use?
+    Face.terminate();
+}
 
 function loadGlyphs(fontfile, index)
 {
@@ -134,8 +162,10 @@ function loadGlyphs(fontfile, index)
         var tooltip = 'Glyph Index: ' + i + ' Glyph Name: ' + glyphName;
         var title_attr = 'title="' + tooltip+ '"';
         title_attr=''; // don't show tooltip
+        var onclick_attr = 'onclick="showGlyph(\''+fontfile+'\', '+index+', ' + i+');"';
+        var width_height_attr = 'width=' + outerSize +' height=' + outerSize;
         glyphs_div.append('<span ' + title_attr +'>\
-                          <svg class="my_glyph" width=' + outerSize +' height=' + outerSize + ' >\
+                          <svg class="my_glyph" ' + onclick_attr + width_height_attr + ' >\
                             <path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/>\
                           <line x1="0" y1="' + leading+ '" x2="100" y2="' + leading +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
                           <text font-size="'+text_size +'" x="' + (fontSize* 0.3) + '" y="'+ (leading + 1.5 *text_size )+'">index: ' + i + '</text>\
