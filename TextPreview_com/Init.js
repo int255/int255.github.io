@@ -26,7 +26,7 @@ function loadFace(fontfile, index)
     
     // dump some glyphs
     //var gid = Module.tp_get_gid(hface, "f".charCodeAt(0));
-    var fontSize = 36.0;
+    var fontSize = 48.0;
     var leading = 1.2 * fontSize;
     //var svg_str = Module.tp_get_svg_glyph(hface, gid, fontSize);
     var svg_str = Module.tp_get_svg(hface, "fi fj ffi The quick brown fox jumps over the lazy dog.", fontSize);
@@ -119,7 +119,7 @@ function loadGlyphs(fontfile, index)
 {
     //alert("Entry loadGlyphs()");
     Face.init(fontfile, index);
-    var fontSize = 24.0;
+    var fontSize = 48.0;
     Face.loadGlyphs(fontSize);
     var svgs = Face.glyphs();
     
@@ -127,12 +127,21 @@ function loadGlyphs(fontfile, index)
     glyphs_div.html('');
     var leading = 1.2 * fontSize;
     var outerSize = 2.0 * fontSize;
+    var text_size = fontSize * 0.25;
     for (var i =0; i<svgs.length; ++i)
     {
         var glyphName = Module.tp_get_glyph_name(Face.face(), i);
         var tooltip = 'Glyph Index: ' + i + ' Glyph Name: ' + glyphName;
-        glyphs_div.append('<span title="' + tooltip + '"><svg width=' + outerSize +' height=' + outerSize + ' ><path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/></svg></span>');
-        //console.log(svgs[i]);
+        var title_attr = 'title="' + tooltip+ '"';
+        title_attr=''; // don't show tooltip
+        glyphs_div.append('<span ' + title_attr +'>\
+                          <svg class="my_glyph" width=' + outerSize +' height=' + outerSize + ' >\
+                            <path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/>\
+                          <line x1="0" y1="' + leading+ '" x2="100" y2="' + leading +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
+                          <text font-size="'+text_size +'" x="' + (fontSize* 0.3) + '" y="'+ (leading + 1.5 *text_size )+'">index: ' + i + '</text>\
+                          <text font-size="'+text_size +'" x="' + (fontSize* 0.3) + '" y="'+ (leading + 1.5 *text_size + 1.2 * text_size )+'">' + glyphName + '</text>\
+                          </svg>\
+                          </span>');
         
     }
 
@@ -172,7 +181,12 @@ function mountFile(fileObject, onFileMounted)
     {
         var filename = fileObject.name;
         var data = new Uint8Array(reader.result);
-        FS.createDataFile('/', filename, data, true /*read*/, false/*write*/, false/*own*/);
+        try {
+            FS.createDataFile('/', filename, data, true /*read*/, false/*write*/, false/*own*/);
+        }catch (err)
+        {
+            console.log('Exception in FS.createDataFile(): ' + err.message);
+        }
         console.log('file onload(): ' + filename);
         console.log(FS.stat(filename));
         msg.log(Module.tp_file_exists(filename));
@@ -200,6 +214,7 @@ function mountFile(fileObject, onFileMounted)
                            {
                            var files = e.originalEvent.dataTransfer.files;
                            var file = files.item(0);
+                           
                            var onFileMounted = function (filename)
                            {
                             loadFontFile(filename);

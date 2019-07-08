@@ -3,6 +3,7 @@
 	<head>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="static/Fonts.css">
+        <link rel="stylesheet" type="text/css" href="static/UI.css">
         <style>
             #drop_zone {
                 border: 5px dashed gray;
@@ -21,7 +22,19 @@
             // override tooltip with jQueryUI's tooltip
             $( function() {
               $( document ).tooltip();
-              } );
+              //$("#search_dialog").dialog(); // don't show search dialog, not yet done
+              /*
+               $("#search_dialog").change(function(){
+                                         var text = $("#search_field").val();
+                                         var gid = parseInt(text);
+                                         alert('search '+ gid);
+                                         });
+              */
+              });
+            
+
+              
+              
         </script>
 	</head>
 	<body>
@@ -52,9 +65,15 @@
         <pre id="log" style="font-family:Nova Mono; font-size:12;"></pre>
         
         <!-- All Glyphs -->
-        <div id="all_glyphs">
+        <div id="all_glyphs" style="font-family:Nova Mono;">
         </div>
         
+        <!-- Search Dialog-->
+        <!--
+        <div id="search_dialog" title="Search">
+            <p>Search Glyph by ID: <input id="search_field" type="Text" name="" placeholder="Glyph Index"></input></p>
+        </div>
+        -->
         <!-- JS includes -->
         <script src='Init.js' type='text/javascript'></script>
         <script src='TextPreview.js' type='text/javascript'></script>

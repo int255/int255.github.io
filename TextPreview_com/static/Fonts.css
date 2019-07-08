@@ -1,13 +1,13 @@
 @font-face {
 	font-family: 'RobotoCondensed-Regular';
-	src: url('RobotoCondensed-Regular.ttf') format('truetype');
+	src: url('robotocondensed-regular.woff2') format('woff2');
 	font-weight: 500;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Nova Mono';
-    src: url('NovaMono.ttf') format('truetype');
+    src: url('novamono-webfont.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
 }
