@@ -1,4 +1,4 @@
-
+// log div
 var msg = {
     log : function(obj) {
         var logger = document.getElementById('log');
@@ -26,9 +26,8 @@ function loadFace(fontfile, index)
     
     // dump some glyphs
     //var gid = Module.tp_get_gid(hface, "f".charCodeAt(0));
-    var fontSize = 48.0;
+    var fontSize = 36.0;
     var leading = 1.2 * fontSize;
-    //var svg_str = Module.tp_get_svg_glyph(hface, gid, fontSize);
     var svg_str = Module.tp_get_svg(hface, "fi fj ffi The quick brown fox jumps over the lazy dog.", fontSize);
     document.getElementById('svg_path').setAttribute('d', svg_str);
     var margin = 5;
@@ -44,7 +43,7 @@ function loadFace(fontfile, index)
     svg_border.setAttribute('transform', 'translate(0, ' + leading +')');
     svg_root =  document.getElementById('svg_root');
     svg_root.setAttribute('width',  bbox.width + 4*margin + 6);
-    svg_root.setAttribute('height',  bbox.height + 4*margin + 6);
+    svg_root.setAttribute('height',  bbox.height + 4*margin + 10);
     Module.tp_close_face(hface);
     
     loadGlyphs(fontfile, index);
@@ -118,16 +117,27 @@ var Face = {
     },
 };
 
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+function toUnicodeString(ch)
+{
+    return ch == 0 ? 'none' : 'U+' + pad(ch.toString(16).toUpperCase(), 4);
+}
+
 function showGlyph(fontfile, index, gid)
 {
     Face.init(fontfile, index);
     var ginfo = Face.glyphInfo(gid);
-    //alert(JSON.stringify(ginfo, null, '    ') );
     var ginfo_str =JSON.stringify(ginfo, function(key, val) {
-                                  if (key == 'unicode' && val == 0)
+                                  if (key == 'unicode')
                                   {
+                                  return toUnicodeString(val);
                                     // if unicode is 0, means we don't know
-                                  return 'none';
+                                  
                                   }
                                   
                                     return val.toFixed ? Number(val.toFixed(3)) : val;
@@ -154,11 +164,14 @@ function loadGlyphs(fontfile, index)
     var glyphs_div = $('#all_glyphs');
     glyphs_div.html('');
     var leading = 1.2 * fontSize;
-    var outerSize = 2.0 * fontSize;
+    var outerSize = 2.4 * fontSize;
     var text_size = fontSize * 0.25;
+    var text_left_indent = (fontSize* 0.3);
+    var text_upper_margin = leading + 2 *text_size;
     for (var i =0; i<svgs.length; ++i)
     {
         var glyphName = Module.tp_get_glyph_name(Face.face(), i);
+        var unicode = Module.tp_get_unicode(Face.face(), i);
         var tooltip = 'Glyph Index: ' + i + ' Glyph Name: ' + glyphName;
         var title_attr = 'title="' + tooltip+ '"';
         title_attr=''; // don't show tooltip
@@ -167,9 +180,10 @@ function loadGlyphs(fontfile, index)
         glyphs_div.append('<span ' + title_attr +'>\
                           <svg class="my_glyph" ' + onclick_attr + width_height_attr + ' >\
                             <path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/>\
-                          <line x1="0" y1="' + leading+ '" x2="100" y2="' + leading +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
-                          <text font-size="'+text_size +'" x="' + (fontSize* 0.3) + '" y="'+ (leading + 1.5 *text_size )+'">index: ' + i + '</text>\
-                          <text font-size="'+text_size +'" x="' + (fontSize* 0.3) + '" y="'+ (leading + 1.5 *text_size + 1.2 * text_size )+'">' + glyphName + '</text>\
+                          <line x1="0" y1="' + leading+ '" x2="' + outerSize +'" y2="' + leading +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
+                          <text font-size="'+text_size +'" x="' + text_left_indent + '" y="'+ (text_upper_margin + 0 *(1.2 * text_size) )+'">index: ' + i + '</text>\
+                          <text font-size="'+text_size +'" x="' + text_left_indent + '" y="'+ (text_upper_margin + 1 *(1.2 * text_size) )+'">' + glyphName + '</text>\
+                          <text font-size="'+text_size +'" x="' + text_left_indent + '" y="'+ (text_upper_margin + 2 *(1.2 * text_size) )+'">' + toUnicodeString(unicode) + '</text>\
                           </svg>\
                           </span>');
         
@@ -203,7 +217,6 @@ function loadFontFile(fontfile)
     
 }
 
-
 function mountFile(fileObject, onFileMounted)
 {
     var reader = new FileReader();
@@ -225,35 +238,40 @@ function mountFile(fileObject, onFileMounted)
     reader.readAsArrayBuffer(fileObject);
 }
 
-    $(function(){
-        $("#drop_zone").on('dragenter', function(e){
-                         e.preventDefault();
-                         $(this).css("background", "#AFAFFF");
-                         });
-        $("#drop_zone").on('dragleave', function(e){
-                         e.preventDefault();
-                         $(this).css("background", "#FFFFFF");
-                         });
-        $("#drop_zone").on('dragover', function(e){
-                         e.preventDefault();
-                         });
-        $("#drop_zone").on('drop', function(e){
-                           e.preventDefault();
-                         
-                           if (e.originalEvent.dataTransfer.files.length)
-                           {
-                           var files = e.originalEvent.dataTransfer.files;
-                           var file = files.item(0);
-                           
-                           var onFileMounted = function (filename)
-                           {
-                            loadFontFile(filename);
-                           };
-                           mountFile(file, onFileMounted);
-                           }
-                           $(this).css("background", "#FFFFFF");
-                           });
-      });
+// Drop zone
+$(function(){
+    $("#drop_zone").on('dragenter', function(e){
+                     e.preventDefault();
+                     $(this).css("background", "#AFAFFF");
+                     });
+    $("#drop_zone").on('dragleave', function(e){
+                     e.preventDefault();
+                     $(this).css("background", "#FFFFFF");
+                     });
+    $("#drop_zone").on('dragover', function(e){
+                     e.preventDefault();
+                     });
+    $("#drop_zone").on('drop', function(e){
+                       e.preventDefault();
+                     
+                       if (e.originalEvent.dataTransfer.files.length)
+                       {
+                       var files = e.originalEvent.dataTransfer.files;
+                       var file = files.item(0);
+                       
+                       var onFileMounted = function (filename)
+                       {
+                        loadFontFile(filename);
+                       };
+                       
+                       // Async, when file mounted -> onFileMouted
+                       mountFile(file, onFileMounted);
+                       }
+                       $(this).css("background", "#FFFFFF");
+                       });
+  });
+
+// Module initialization
 var Module = {
     _runTimeInitBegin: null,
     preInit : function() {
@@ -287,6 +305,8 @@ var Module = {
     onRuntimeInitialized : function() {
         console.log('Module.onRuntimeInitialized()');
         console.log('Built timestamp: ' + Module.tp_build_timestamp());
-        loadFontFile('Futura.ttc');
+        // Default font
+        // loadFontFile('Futura.ttc');
+        loadFontFile('ACaslonPro-Regular.otf');
     },
 };
