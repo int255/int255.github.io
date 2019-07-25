@@ -1,4 +1,13 @@
 // log div
+
+function toString(obj)
+{
+    if (typeof obj == 'object') {
+        return (JSON && JSON.stringify ? JSON.stringify(obj, null, '    ') : obj) ;
+    } else {
+        return obj;
+    }
+}
 var msg = {
     log : function(obj) {
         var logger = document.getElementById('log');
@@ -24,7 +33,9 @@ function loadFace(fontfile, index)
     var hface = Module.tp_open_face(fontfile, index);
     var info = Module.tp_get_face_info(hface);
     msg.clear();
-    msg.log(info);
+    
+    $('#font_info').html('');
+    $('#font_info').html(JSON.stringify(info, null, '    '));
 
     var fontSize = 36.0;
     var leading = 1.2 * fontSize;
@@ -46,10 +57,9 @@ function loadFace(fontfile, index)
     svg_root.setAttribute('height',  bbox.height + 4*margin + 10);
     Module.tp_close_face(hface);
     
-    setTimeout(function(){
-               loadGlyphs_v2(fontfile, index);
-               },
-               0);
+    loadLigatures(fontfile, index);
+    loadGlyphs_v2(fontfile, index);
+
 }
 
 function createFace(fontfile, index)
@@ -152,6 +162,16 @@ var FaceLoader = {
     numGlyphs : function()
     {
         return this._numGlyphs;
+    },
+    ligatures : function()
+    {
+        var gidObjs = Module.tp_get_ligatures(FaceLoader.face());
+        var gids = new Array(gidObjs.size());
+        for (var i = 0; i<gidObjs.size(); ++i)
+        {
+            gids[i] = gidObjs.get(i);
+        }
+        return gids;
     }
 };
 
@@ -188,67 +208,6 @@ function showGlyph(fontfile, index, gid)
                buttons: { Ok: function() { $( this ).dialog( "close" );}}
                });
     //.position({at: ['left', 'center'], my: 'center'}); // no use?
-    FaceLoader.terminate();
-}
-
-function loadGlyphs(fontfile, index)
-{
-    //alert("Entry loadGlyphs()");
-    FaceLoader.init(fontfile, index);
-    var fontSize = 48.0;
-    FaceLoader.loadGlyphs(fontSize);
-    console.log('loadGlyphs(): glyphs loaded.');
-    var svgs = FaceLoader.glyphs();
-    
-    var glyphs_div = $('#all_glyphs');
-    glyphs_div.html('');
-    glyphs_div.hide();
-    
-//    glyphs_div.redraw();
-    var leading = 1.2 * fontSize;
-    var outerSize = 2.4 * fontSize;
-    var text_size = fontSize * 0.25;
-    var text_left_indent = (fontSize* 0.3);
-    var text_upper_margin = leading + 2 *text_size;
-    var glyphs_div_str = ''
-    
-    for (var i =0; i<svgs.length; ++i)
-    {
-        
-        console.log('loadGlyphs() creating glyph div #' + i);
-        var glyphName = Module.tp_get_glyph_name(FaceLoader.face(), i);
-        var unicode = Module.tp_get_unicode(FaceLoader.face(), i);
-        var tooltip = 'Glyph Index: ' + i + ' Glyph Name: ' + glyphName;
-        var title_attr = 'title="' + tooltip+ '"';
-        title_attr=''; // don't show tooltip
-        var onclick_attr = 'onclick="showGlyph(\''+fontfile+'\', '+index+', ' + i+');"';
-        var width_height_attr = 'width=' + outerSize +' height=' + outerSize;
-        var simple = false;
-        if (simple)
-        {
-            glyphs_div_str +=
-            '<span ' + title_attr +'>\
-            <svg class="my_glyph" ' + onclick_attr + width_height_attr + ' >\
-            <path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/>\
-            </svg>\
-            </span>';
-        } else {
-            glyphs_div_str +=
-            '<span ' + title_attr +'>\
-            <svg class="my_glyph" ' + onclick_attr + width_height_attr + ' >\
-            <path transform="translate(0, ' + leading +')" d="'+ svgs[i] + ' " fill="black" stroke="black" stroke-width="0"/>\
-            <line x1="0" y1="' + leading+ '" x2="' + outerSize +'" y2="' + leading +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
-            <text font-size="'+text_size +'" x="' + text_left_indent + '" y="'+ (text_upper_margin + 0 *(1.2 * text_size) )+'">index: ' + i + '</text>\
-            <text font-size="'+text_size +'" x="' + text_left_indent + '" y="'+ (text_upper_margin + 1 *(1.2 * text_size) )+'">' + glyphName + '</text>\
-            <text font-size="'+text_size +'" x="' + text_left_indent + '" y="'+ (text_upper_margin + 2 *(1.2 * text_size) )+'">' + toUnicodeString(unicode) + '</text>\
-            </svg>\
-            </span>';
-        }
-        
-    }
-    
-    glyphs_div.append(glyphs_div_str);
-    
     FaceLoader.terminate();
 }
 
@@ -337,9 +296,22 @@ function loadGlyphs_v2(fontfile, index)
 }
 
 
+function loadLigatures(fontfile, index)
+{
+    
+    FaceLoader.init(fontfile, index);
+    var gids = FaceLoader.ligatures();
+
+    $('#ligatures').html(toString(gids));
+    FaceLoader.terminate();
+     
+}
+
+
 
 function loadFontFile(fontfile, callback)
 {
+    
     msg.clear();
     msg.log('Font file: ' + fontfile + ' exists? ' + Module.tp_file_exists(fontfile));
     $("#dropped_filename").html(fontfile);
@@ -348,14 +320,18 @@ function loadFontFile(fontfile, callback)
     $('#font_collection').html('');
     for (var i=0; i<count; ++i)
     {
+        try {
         var hface = Module.tp_open_face(fontfile, i);
         var info = Module.tp_get_face_info(hface);
         // Fill font_collection
         var on_click_attr_str = 'onclick=\'loadFace("'+fontfile+'", ' + i + ');\'';
         //var on_click_attr_str = '';
-        $('#font_collection').append('<div id="font_face" ' + on_click_attr_str + '>' + info['postscriptName'] + '</div>');
+        $('#font_collection').append('<span style="margin:5px;"id="font_face" ' + on_click_attr_str + '>' + info['postscriptName'] + '</span>');
 
         Module.tp_close_face(hface);
+        } catch (err){
+            alert('Exception caught');
+        }
     }
 
     if (count != 0)
@@ -463,8 +439,6 @@ var Module = {
         console.log('Module.onRuntimeInitialized()');
         console.log('Built timestamp: ' + Module.tp_build_timestamp());
         // Default font
-        // loadFontFile('Futura.ttc');
-        
         loadFontFile('ACaslonPro-Regular.otf');
     },
 };

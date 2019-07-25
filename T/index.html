@@ -19,6 +19,12 @@
                                          alert('search '+ gid);
                                          });
               */
+              
+              $( function() {
+                $( "#tabs" ).tabs();
+                $( "#tabs" ).show(0);
+                } );
+              
               });
         </script>
 	</head>
@@ -30,16 +36,17 @@
 
         <div style="font-family:RobotoCondensed-Regular;" id="drop_zone">
             <p> Drop a font file here ...</p>
-            <p id="dropped_filename"> filename </p>
+            <p id="dropped_filename" style=" font-size:18"> filename </p>
+            <!-- Font collection -->
+            <p id="font_collection" style=" font-size:12;">
+                
+            </p>
         </div>
         
         <div id="progressbar" style="width:80%; height:10px;">
         </div>
        
-        <!-- Font collection -->
-        <div id="font_collection" style="font-family:RobotoCondensed-Regular; font-size:12;">
-            
-        </div>
+       
 
         <!-- Preview -->
         <div>
@@ -51,9 +58,32 @@
         </div>
         <pre id="log" style="font-family:Nova Mono; font-size:12;"></pre>
         
-        <!-- All Glyphs -->
-        <div id="all_glyphs" style="font-family:Nova Mono;">
+        <div id="tabs" style="display: none;">
+            <ul>
+                <li><a href="#tabs-1">Glyphs</a></li>
+                <li><a href="#tabs-2">Ligatures</a></li>
+                <li><a href="#tabs-3">Font Info</a></li>
+            </ul>
+            <div id="tabs-1">
+                <!-- All Glyphs -->
+                <div id="all_glyphs" style="font-family:Nova Mono;">
+                </div>
+            </div>
+            <div id="tabs-2">
+                <p>
+                    Under construction
+                    <img src="static/images/under_construction.png">
+                </p>
+                <div id="ligatures">
+                </div>
+            </div>
+            <div id="tabs-3">
+                <p>
+                <pre id="font_info" style="font-family:Nova Mono; font-size:18;"></pre>
+                </p>
+            </div>
         </div>
+        
         
         <!-- Individual Glyph Info -->
         <div id="glyph_info" title="Glyph Info" style="font-family:Nova Mono;">
