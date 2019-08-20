@@ -1,4 +1,24 @@
 // log div
+// global configuration
+var App =
+{
+    _fontFile : '',
+    _index : '',
+    
+    previewSize : function() { return 36.0; },
+    setActiveFont : function (fontFile, index)
+    {
+        this._fontFile = fontFile;
+        this._index = index;
+    },
+    getActiveFontFile : function() {
+        return this._fontFile;
+    },
+    getActiveFontIndex : function ()
+    {
+        return this._index;
+    }
+};
 
 function toString(obj)
 {
@@ -30,6 +50,7 @@ var msg = {
 
 function loadFace(fontfile, index)
 {
+    App.setActiveFont(fontfile, index);
     var hface = Module.tp_open_face(fontfile, index);
     var info = Module.tp_get_face_info(hface);
     msg.clear();
@@ -37,25 +58,9 @@ function loadFace(fontfile, index)
     $('#font_info').html('');
     $('#font_info').html(JSON.stringify(info, null, '    '));
 
-    var fontSize = 36.0;
-    var baseline = 1.2 * fontSize;
-    var svg_str = Module.tp_get_svg(hface, "A case to end all cases. ", fontSize);
-    document.getElementById('svg_path').setAttribute('d', svg_str);
-    var margin = 5;
-    document.getElementById('svg_path').setAttribute('transform', 'translate(' + margin + ', ' + (baseline+ margin) +')');
-    var bbox = document.getElementById('svg_path').getBBox();
-    console.log('bounds: ' + bbox);
-    var svg_border = document.getElementById('svg_path_border');
     
-    svg_border.setAttribute('x', bbox.x + 1);
-    svg_border.setAttribute('y', bbox.y + 1);
-    svg_border.setAttribute('width', bbox.width + 2*margin);
-    svg_border.setAttribute('height', bbox.height+ 2*margin);
-    svg_border.setAttribute('transform', 'translate(0, ' + baseline +')');
-    svg_root =  document.getElementById('svg_root');
-    svg_root.setAttribute('width',  bbox.width + 4*margin + 6);
-    svg_root.setAttribute('height',  bbox.height + 4*margin + 10);
-    Module.tp_close_face(hface);
+    var fontSize = App.previewSize();
+    showPreview(fontfile, index, "A case to end all cases. ", fontSize);
     
     loadLigatures(fontfile, index);
     loadGlyphs_v2(fontfile, index);
@@ -124,7 +129,7 @@ var FaceLoader = {
     {
         return this._face;
     },
-    info:function()
+    info: function()
     {
         return this._info;
     },
@@ -222,6 +227,7 @@ function showGlyph(fontfile, index, gid)
                buttons: { Ok: function() { $( this ).dialog( "close" );}}
                });
     //.position({at: ['left', 'center'], my: 'center'}); // no use?
+    
     FaceLoader.terminate();
 }
 
@@ -241,24 +247,20 @@ function createGlyphDrawer(faceLoader, fontSize)
     o.text_left_indent = 0.3 * fontSize;
     o.text_upper_margin = o.baseline + 2 * o.text_size;
     o.left_indent = (0.7 ) * fontSize;
-    o.drawGlyphSpan = function (gid) {
-        var span = '';
-        var svg = FaceLoader.glyphSVG(gid, fontSize);
-        //alert('GID'+gid +' ' + svg);
+    o.drawGlyphSVG = function (gid) {
+        var svg = '';
+        var glyph_svg = FaceLoader.glyphSVG(gid, fontSize);
+        
         var glyphName = Module.tp_get_glyph_name(FaceLoader.face(), gid);
         var unicode = Module.tp_get_unicode(FaceLoader.face(), gid);
         var glyph_info = FaceLoader.glyphInfo(gid);
-        var tooltip = 'Glyph Index: ' + gid + ' Glyph Name: ' + glyphName;
-        var title_attr = 'title="' + tooltip+ '"';
-        title_attr=''; // don't show tooltip
         var onclick_attr = 'onclick="showGlyph(\''+ this.fontfile +'\', '+ this.index +', ' + gid+');"';
         var width_height_attr = 'width=' + this.frameSize +' height=' + this.frameSize;
         var simple = false;
         
-        span +=
-        '<span ' + title_attr +'>\
-        <svg class="my_glyph" ' + onclick_attr + width_height_attr + ' >\
-        <path transform="translate('+ this.left_indent + ', ' + this.baseline +')" d="'+ svg + ' " fill="black" stroke="black" stroke-width="0"/>';
+        svg +=
+        '<svg class="my_glyph" ' + onclick_attr + width_height_attr + ' >\
+        <path transform="translate('+ this.left_indent + ', ' + this.baseline +')" d="'+ glyph_svg + ' " fill="black" stroke="black" stroke-width="0"/>';
         if (!simple)
         {
             var bearingY = this.fontSize* glyph_info.metrics.bearingY;
@@ -268,7 +270,8 @@ function createGlyphDrawer(faceLoader, fontSize)
                 bearingY = this.fontSize;
                 stroke_attr='stroke-dasharray="4"';
             }
-            span+='<line x1="0" y1="' + this.baseline+ '" x2="' + this.frameSize +'" y2="' + this.baseline +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
+
+            svg+='<line x1="0" y1="' + this.baseline+ '" x2="' + this.frameSize +'" y2="' + this.baseline +'" stroke="#C0C0C0" stroke-dasharray="4" style="stroke-width:0.5;"/>\
             <line x1="'+this.left_indent +'" y1="'+this.baseline+'" x2="'+this.left_indent +'" y2 ="'+(this.baseline- bearingY)+'" stroke="#E0E0E0" style="stroke-width:1.5;" '+stroke_attr + '/>\
             <line x1="'+ (this.left_indent + this.fontSize * glyph_info.metrics.advanceX)+'" y1="'+this.baseline+'" x2="'+(this.left_indent + this.fontSize * glyph_info.metrics.advanceX) +'" y2 ="'+(this.baseline-bearingY)+'" stroke="#E0E0E0" style="stroke-width:1.5;" ' +stroke_attr+'/>\
             <text font-size="'+ this.metrics_text_size +'" x="' + (this.left_indent + this.fontSize * glyph_info.metrics.advanceX) + '" y="'+ (this.baseline)+'">' + glyph_info.metrics.advanceX + '</text>\
@@ -276,9 +279,9 @@ function createGlyphDrawer(faceLoader, fontSize)
             <text font-size="'+ this.text_size +'" x="' + this.text_left_indent + '" y="'+ (this.text_bottom_baseline - 1 *(1.2 * this.text_size) )+'">' + glyphName + '</text>\
             <text font-size="'+ this.text_size +'" x="' + this.text_left_indent + '" y="'+ (this.text_bottom_baseline - 0 *(1.2 * this.text_size) )+'">' + toUnicodeString(unicode) + '</text>';
         }
-        span+='</svg></span>';
+        svg+='</svg>';
         
-        return span;
+        return svg;
     }
     return o;
 }
@@ -312,7 +315,7 @@ function loadGlyphs_v2(fontfile, index)
                                 {
                                     var percentage = Math.floor(100* (1+iii) / FaceLoader.numGlyphs());
                                     showProgress(percentage);
-                                    var span = drawer.drawGlyphSpan(iii);
+                                    var span = '<span>' + drawer.drawGlyphSVG(iii) + '</span>';
                                     glyphs_div_str+=span;
                                 }
                               
@@ -361,18 +364,32 @@ function toReadableCodePoints(codePoints)
     return innerText;
 }
 
+function showPreview(fontfile, index, text, fontSize)
+{
+    var hface = Module.tp_open_face(fontfile, index);
+    var svgObj = Module.tp_get_svg_aligned(hface, text, fontSize);
+    var preview_svg_path = document.getElementById('preview_svg_path');
+    preview_svg_path.setAttribute('d', svgObj.d);
+
+    var preview_svg = document.getElementById('preview_svg');
+    preview_svg.setAttribute('width',  (svgObj.boundingBox.right - svgObj.boundingBox.left) );
+    preview_svg.setAttribute('height',  (svgObj.boundingBox.top - svgObj.boundingBox.bottom));
+    Module.tp_close_face(hface);
+}
+
+
 function loadLigatures(fontfile, index)
 {
-    
     FaceLoader.init(fontfile, index);
     var gids = FaceLoader.ligatures();
 
-    var drawer = createGlyphDrawer(FaceLoader, 36);
+    var ligature_font_size =48;
+    var drawer = createGlyphDrawer(FaceLoader, ligature_font_size);
     var lig_div = '';
     for (var i =0; i< gids.length; ++i)
     {
         //alert('[' +i +']' + gids[i]);
-        var glyph_span = drawer.drawGlyphSpan(gids[i]);
+        var glyph_span = '<span>' +  drawer.drawGlyphSVG(gids[i]) + '</span>';
         var decomps = FaceLoader.decompose(gids[i]);
         var decomps_span = '<span style="display:inline-block;">';
         for (var j =0; j< decomps.size(); ++j)
@@ -439,7 +456,12 @@ function mountFile(fileObject, onFileMounted)
             console.log('Exception in FS.createDataFile(): ' + err.message);
         }
         console.log('file onload(): ' + filename);
-        console.log(FS.stat(filename));
+        var stat = FS.stat(filename);
+        console.log(stat);
+        if (stat.size == 0)
+        {
+            alert('Empty file: ' + filename + ' ' + stat.size +' bytes?');
+        }
         msg.log(Module.tp_file_exists(filename));
         onFileMounted(filename);
     }
@@ -468,7 +490,9 @@ $(function(){
                        e.preventDefault();
                        if (e.originalEvent.dataTransfer.files.length)
                        {
+                       console.log(toString(e.originalEvent));
                        var files = e.originalEvent.dataTransfer.files;
+                       console.log('dropped ' + files.length + ' files.');
                        var file = files.item(0);
                        
                        var callback = function(percentage)
@@ -486,6 +510,12 @@ $(function(){
                        }
                        $(this).css("background", "#FFFFFF");
                        });
+  
+  $("#input_text").on('input propertychange', function()
+                      {
+                        var text = $("#input_text").val();
+                        showPreview(App.getActiveFontFile(), App.getActiveFontIndex(), text, App.previewSize());
+                      });
   });
 
 // Module initialization
