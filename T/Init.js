@@ -377,6 +377,12 @@ function showPreview(fontfile, index, text, fontSize)
     Module.tp_close_face(hface);
 }
 
+function updatePreview()
+{
+    var text = $("#input_text").val();
+    var text_size = parseInt($("#input_text_size").val());
+    showPreview(App.getActiveFontFile(), App.getActiveFontIndex(), text, text_size);
+}
 
 function loadLigatures(fontfile, index)
 {
@@ -511,11 +517,8 @@ $(function(){
                        $(this).css("background", "#FFFFFF");
                        });
   
-  $("#input_text").on('input propertychange', function()
-                      {
-                        var text = $("#input_text").val();
-                        showPreview(App.getActiveFontFile(), App.getActiveFontIndex(), text, App.previewSize());
-                      });
+  $("#input_text").on('input propertychange', function(){ updatePreview();});
+  $("#input_text_size").on('input', function(){ updatePreview(); });
   });
 
 // Module initialization
