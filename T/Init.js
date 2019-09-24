@@ -221,9 +221,24 @@ function showGlyph(fontfile, index, gid)
                                   }, '  ' /*indent*/) ;
     
     var div = $("#glyph_info");
-    div.html('<pre>' + ginfo_str + '</pre>');
+    var drawer = createGlyphDrawer(FaceLoader, 96);
+    // decompose
+        var decomps = FaceLoader.decompose(gid);
+        var decomps_span = '<span style="display:inline-block;">';
+        for (var j =0; j< decomps.size(); ++j)
+        {
+            var decomp = decomps.get(j);
+            decomps_span += ' <-('+ decomp.steps +')- ' + toReadableCodePoints(decomp.codePoints) + '&emsp;&emsp;' + toReadableFeatures(decomp.features) + '<br>';
+        }
+        decomps_span+='</span>';
+    
+    var glyph_span = '<span>' + drawer.drawGlyphSVG(gid) + '</span>';
+    var spans_str = '<p>' + glyph_span + decomps_span + '</p>';
+    div.html(spans_str + '<pre style="font-family:Nova Mono; font-size:12;">' + ginfo_str + '</pre>');
     div.dialog({
                modal: true,
+               width: 480,
+               height: 640,
                buttons: { Ok: function() { $( this ).dialog( "close" );}}
                });
     //.position({at: ['left', 'center'], my: 'center'}); // no use?
