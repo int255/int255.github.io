@@ -25,6 +25,16 @@
 			window.addEventListener("message", (event) => 
 			{
 				alert("Inner: event.origin is " + JSON.stringify(event));
+				try{
+					window.parent.postMessage("RESPONSE MESSAGE", '*');
+				} catch (err) {
+					alert("1 exception: " + err.message);
+				}
+				try{
+					event.source.postMessage("RESPONSE MESSAGE", '*');
+				} catch (err) {
+					alert("2 exception: " + err.message);
+				}
 			}, false);
 		</script>
 	</body>
