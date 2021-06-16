@@ -20,11 +20,11 @@
 		<script>
 			function hello()
 			{
-				alert('Hello! Welcome to NEXU\'s test page!');
+				alert('Inner: Hello! Welcome to NEXU\'s test page!');
 			}
 			window.addEventListener("message", (event) => 
 			{
-				alert("event.origin is " + JSON.stringify(event));
+				alert("Inner: event.origin is " + JSON.stringify(event));
 			}, false);
 		</script>
 	</body>
