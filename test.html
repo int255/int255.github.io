@@ -22,16 +22,17 @@
 			{
 				alert('Inner: Hello! Welcome to NEXU\'s test page!');
 			}
-			window.addEventListener("message", (ev) => 
+			window.addEventListener("message", (e) => 
 			{
-				alert("Inner: event is " + JSON.stringify(ev));
+				alert("INNER: \ne.origin: " + e.origin + "\ntypeof e.source: " + 
+					typeof(e.source) + "\ne.data: " + JSON.stringify(e.data));
 				try{
-					window.parent.postMessage("RESPONSE MESSAGE", '*');
+					window.parent.postMessage("RESPONSE MESSAGE 1", '*');
 				} catch (err) {
 					alert("1 exception: " + err.message);
 				}
 				try{
-					ev.source.postMessage("RESPONSE MESSAGE", '*');
+					e.source.postMessage("RESPONSE MESSAGE 2", '*');
 				} catch (err) {
 					alert("2 exception: " + err.message);
 				}
