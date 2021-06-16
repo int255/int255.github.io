@@ -22,16 +22,16 @@
 			{
 				alert('Inner: Hello! Welcome to NEXU\'s test page!');
 			}
-			window.addEventListener("message", (event) => 
+			window.addEventListener("message", (ev) => 
 			{
-				alert("Inner: event.origin is " + JSON.stringify(event));
+				alert("Inner: event is " + JSON.stringify(ev));
 				try{
 					window.parent.postMessage("RESPONSE MESSAGE", '*');
 				} catch (err) {
 					alert("1 exception: " + err.message);
 				}
 				try{
-					event.source.postMessage("RESPONSE MESSAGE", '*');
+					ev.source.postMessage("RESPONSE MESSAGE", '*');
 				} catch (err) {
 					alert("2 exception: " + err.message);
 				}
