@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<link rel="preload" as="font" href="static/robotocondensed-regular.woff2" type="font/woff2" crossorigin="anonymous">
+		<link rel="stylesheet" type="text/css" href="static/nexu.css">
+		<meta charset="utf-8"/>
+	</head>
+
+	<body>
+		<div class="main" style="font-family:RobotoCondensed-Regular; text-align:center;">
+			<p> HELLO FROM TEST PAGE </p>
+		</div>
+		<div>
+			<br>
+		</div>
+		<div class="main" style="font-family:RobotoCondensed-Regular; text-align:center;">
+			<p> a page for testing postMessage </p>
+		</div>
+		<script>
+			function hello()
+			{
+				alert('Hello! Welcome to NEXU\'s test page!');
+			}
+			window.addEventListener("message", (event) => 
+			{
+				alert("event.origin is " + JSON.stringify(event));
+			}, false);
+		</script>
+	</body>
+
+</html>
