@@ -37,6 +37,13 @@
 					alert("2 exception: " + err.message);
 				}
 			}, false);
+
+			var cookiestr="Foo=Bar; SameSite=None; Secure";
+			alert("Storing cookie:" + cookiestr); 
+			document.cookie=cookiestr;
+			// get cookies:
+			var ca = document.cookie.split(';');
+			alert("splitted: " + JSON.stringify(ca));
 		</script>
 	</body>
 
