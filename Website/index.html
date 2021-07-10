@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Cloud Annotations Sandbox Website</title>
+		<link rel="stylesheet" href="css/index.css">
+		<!-- Insert this line above script imports -->
+		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+		<script>if (typeof exports === 'object') {window.exports = exports; exports = undefined;}</script>
+		<!-- Jquery & CSInterface -->
+		<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+		<script type="text/javascript" src="js/CSInterface_CEP11.js"> </script>
+
+		<!-- Insert this line after script imports -->
+		<script>if (window.module) module = window.module;</script>
+		<script>if (window.exports) exports = window.exports;</script>
+	</head>
+	<body>
+		<h1>The Cloud Annotations Interaction Sandbox</h1>
+		<div id="highlight_section">
+			<div class="clickable" id="hello">
+				Say Hello
+			</div>
+			<div class="clickable" id="highlight_mediabox">
+				Highlight page
+			</div>
+			<div class="clickable" id="highlight_area1">
+				Highlight 100x100
+			</div>
+			<div class="clickable" id="highlight_custom">
+				Highlight custom
+			</div>
+			<div>
+				x:<input id="custom_x" type="number" value="30" step="10"/>
+				y:<input id="custom_y" type="number" value="50" step="10"/>
+				width:<input id="custom_width" type="number" value="200" min="0" step="10"/>
+				height:<input id="custom_height" type="number" value="100" min="0" step="10"/>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/AI.js"> </script>
+		<script type="text/javascript" src="js/interact.js"> </script>
+	</body>
+</html>

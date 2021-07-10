@@ -1,0 +1,28 @@
+:root {
+  --eskodark: #444B53;
+  --eskolight: #A6C044;
+}
+@font-face {
+	font-family: Barlow-Regular;
+	src: url(Barlow-Regular.woff2);
+}
+
+html *
+{
+	font-family: Barlow-Regular;
+}
+
+body {
+	background-color: #F7F7F7;
+}
+
+.clickable
+{
+	border: 1px solid var(--eskodark);
+}
+
+.clickable:hover
+{
+	border: 2px solid var(--eskodark);
+	background-color: var(--eskolight);
+}
